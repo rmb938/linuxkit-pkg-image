@@ -25,6 +25,11 @@ type middleFileReader struct {
 }
 
 func (m *middleFileReader) Read(p []byte) (int, error) {
+	if uint32(m.total) >= m.Size {
+		log.Print("Someone is trying to read after we are done")
+		return 0, io.EOF
+	}
+
 	n, err := m.File.ReadAt(p, int64(m.Start+uint32(m.total)))
 	if err != nil {
 		return n, err
