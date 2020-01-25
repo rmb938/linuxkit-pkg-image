@@ -43,7 +43,7 @@ func (m middleFileReader) Read(p []byte) (int, error) {
 
 	if int64(n)+m.current > m.End {
 		zeroBytes := make([]byte, len(p[m.End-m.current:]))
-		p = append(p[:m.End-m.current-1], zeroBytes...)
+		p = append(p[:m.End-m.current], zeroBytes...)
 
 		m.current = m.End
 		return int(m.End - m.current), io.EOF
