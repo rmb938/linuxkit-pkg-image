@@ -33,7 +33,7 @@ func (m *middleFileReader) Read(p []byte) (int, error) {
 	tmpTotal := m.total + uint64(n)
 
 	if uint32(tmpTotal) >= m.Size {
-		return int(uint32(m.total) - m.Size), io.EOF
+		return int(m.Size - uint32(m.total)), io.EOF
 	}
 	m.total = m.total + uint64(n)
 
