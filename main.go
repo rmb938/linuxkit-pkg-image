@@ -33,7 +33,7 @@ func main() {
 	rawPartitions, err := imageDisk.GetPartitionTable()
 	imagePartitions := rawPartitions.(*mbr.Table).Partitions
 
-	log.Printf("Reading smallest disk %s", diskName)
+	log.Printf("Reading disk %s", diskName)
 	destDisk, err := diskfs.Open(diskName)
 	if err != nil {
 		log.Fatalf("Error opening disk %s: %v", diskName, err)
@@ -60,8 +60,10 @@ func main() {
 	// copy partition table from image
 	log.Print("Copying partition table from image")
 	for _, partition := range imagePartitions {
-		if partition.Size == 0 {
-			// ignore partitions with 0 size
+		log.Printf("Copying partition info %v", partition)
+		if partition.Type == mbr.Empty {
+			log.Printf("Ignoring empty typed partition")
+			// ignore partitions that are empty type
 			continue
 		}
 		table.Partitions = append(table.Partitions, &mbr.Partition{
