@@ -30,9 +30,12 @@ func (m middleFileReader) Read(p []byte) (int, error) {
 		return n, err
 	}
 
-	tmpTotal := uint64(n) + m.total
+	tmpTotal := m.total + uint64(n)
+
+	log.Printf("Start: %v Size: %v Total: %v", m.Start, m.Size, tmpTotal)
 
 	if uint32(tmpTotal) >= m.Size {
+		log.Printf("Hit the end %v", int(uint32(tmpTotal)-m.Size))
 		return int(uint32(tmpTotal) - m.Size), io.EOF
 	}
 	m.total = m.total + uint64(n)
