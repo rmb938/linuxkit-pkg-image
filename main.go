@@ -19,37 +19,26 @@ import (
 
 type middleFileReader struct {
 	os.File
-	Start   int64
-	End     int64
-	current int64
+	Start int64
+	Size  int64
+	total int64
 }
 
 func (m middleFileReader) Read(p []byte) (int, error) {
-	if m.current == 0 {
-		_, err := m.Seek(m.Start, 0)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	if m.current >= m.End {
+	if m.total > m.Size {
 		return 0, io.EOF
 	}
 
-	n, err := m.File.Read(p)
+	n, err := m.File.ReadAt(p, m.Start+m.total)
 	if err != nil {
 		return n, err
 	}
 
-	if int64(n)+m.current > m.End {
-		zeroBytes := make([]byte, len(p[m.End-m.current:]))
-		p = append(p[:m.End-m.current], zeroBytes...)
-
-		m.current = m.End
-		return int(m.End - m.current), io.EOF
+	if int64(n)+m.total >= m.Size {
+		return int((m.Start + m.Size) - (m.Start + m.total)), io.EOF
 	}
+	m.total += int64(n)
 
-	m.current = m.current + int64(n)
 	return n, nil
 }
 
@@ -136,7 +125,7 @@ func main() {
 		_, err = destDisk.WritePartitionContents(i+2, middleFileReader{
 			File:  *f,
 			Start: int64(imagePartitionTable.LogicalSectorSize * int(partition.Start)),
-			End:   int64(imagePartitionTable.LogicalSectorSize * int(partition.Start+partition.Size)),
+			Size:  int64(imagePartitionTable.LogicalSectorSize * int(partition.Size))
 		})
 		if err != nil {
 			log.Fatalf("Error writing partition content from image %v", err)
