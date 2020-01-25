@@ -56,25 +56,25 @@ func main() {
 		},
 	}
 
-	nextSectorStart := startSector + cloudInitSectors
+	// nextSectorStart := startSector + cloudInitSectors
 
 	// copy partition table from image
-	log.Print("Copying partition table from image")
-	for _, partition := range imagePartitions {
-		log.Printf("Copying partition info %v", partition)
-		if partition.Type == mbr.Empty {
-			log.Printf("Ignoring empty typed partition")
-			// ignore partitions that are empty type
-			continue
-		}
-		table.Partitions = append(table.Partitions, &mbr.Partition{
-			Bootable: partition.Bootable,
-			Type:     partition.Type,
-			Start:    nextSectorStart,
-			Size:     partition.Size,
-		})
-		nextSectorStart = nextSectorStart + partition.Size
-	}
+	// log.Print("Copying partition table from image")
+	// for _, partition := range imagePartitions {
+	// 	log.Printf("Copying partition info %v", partition)
+	// 	if partition.Type == mbr.Empty {
+	// 		log.Printf("Ignoring empty typed partition")
+	// 		// ignore partitions that are empty type
+	// 		continue
+	// 	}
+	// 	table.Partitions = append(table.Partitions, &mbr.Partition{
+	// 		Bootable: partition.Bootable,
+	// 		Type:     partition.Type,
+	// 		Start:    nextSectorStart,
+	// 		Size:     partition.Size,
+	// 	})
+	// 	nextSectorStart = nextSectorStart + partition.Size
+	// }
 
 	// write partition table to disk
 	log.Print("Writing partition table to disk")
@@ -84,7 +84,7 @@ func main() {
 	}
 
 	// TODO: copy partition contents
-	log.Print("Copying partition contents from image")
+	// log.Print("Copying partition contents from image")
 
 	// create the cloud init filesystem
 	log.Print("Creating cloud init filesystem")
