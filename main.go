@@ -104,7 +104,7 @@ func main() {
 
 	log.Printf("Cleaning cloud init partition")
 	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
-	_, err = destDisk.WritePartitionContents(1, bytes.NewReader(b))
+	_, err = destDisk.WritePartitionContents(len(table.Partitions), bytes.NewReader(b))
 	if err != nil {
 		log.Fatalf("Error cleaning cloud-init partition: %v", err)
 	}
@@ -112,7 +112,7 @@ func main() {
 	// create the cloud init filesystem
 	log.Print("Creating cloud init filesystem")
 	cloudInitFS, err := destDisk.CreateFilesystem(disk.FilesystemSpec{
-		Partition:   1,
+		Partition:   len(table.Partitions),
 		FSType:      filesystem.TypeFat32,
 		VolumeLabel: "config-2",
 	})
