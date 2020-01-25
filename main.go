@@ -54,10 +54,10 @@ func (m *middleFileReader) Read(p []byte) (int, error) {
 func main() {
 
 	var imagePath string
-	var diskName string
+	var diskPath string
 
 	flag.StringVar(&imagePath, "image", "", "The path to the image")
-	flag.StringVar(&diskName, "disk", "", "The path to the disk to write the image to")
+	flag.StringVar(&diskPath, "disk", "", "The path to the disk to write the image to")
 
 	flag.Parse()
 
@@ -67,21 +67,34 @@ func main() {
 		log.Fatalf("Error opening image %s: %v", imagePath, err)
 	}
 
-	log.Printf("Reading disk %s", diskName)
-	destDisk, err := diskfs.Open(diskName)
+	diskFile, err := os.Open(diskPath)
 	if err != nil {
-		log.Fatalf("Error opening disk %s: %v", diskName, err)
+		log.Fatalf("Error opening disk %s: %v", diskPath, err)
 	}
 
 	log.Print("Writing image to disk")
-	_, err = io.Copy(destDisk.File, imageFile)
+	_, err = io.Copy(diskFile, imageFile)
 	if err != nil {
-		log.Fatalf("Error writing image to disk %s: %v", diskName, err)
+		log.Fatalf("Error writing image to disk %s: %v", diskPath, err)
+	}
+	err = imageFile.Close()
+	if err != nil {
+		log.Fatalf("Error closing image %s: %v", imagePath, err)
+	}
+	err = diskFile.Close()
+	if err != nil {
+		log.Fatalf("Error closing disk %s: %v", diskPath, err)
+	}
+
+	log.Printf("Reading disk partitions %s", diskPath)
+	destDisk, err := diskfs.Open(diskPath)
+	if err != nil {
+		log.Fatalf("Error opening disk %s: %v", diskPath, err)
 	}
 
 	rawTable, err := destDisk.GetPartitionTable()
 	if err != nil {
-		log.Fatalf("Error getting partition table for disk %s: %v", diskName, err)
+		log.Fatalf("Error getting partition table for disk %s: %v", diskPath, err)
 	}
 	table := rawTable.(*mbr.Table)
 
@@ -99,7 +112,7 @@ func main() {
 	log.Print("Writing partition table to disk")
 	err = destDisk.Partition(table)
 	if err != nil {
-		log.Fatalf("Error writing partition table to disk %s: %v", diskName, err)
+		log.Fatalf("Error writing partition table to disk %s: %v", diskPath, err)
 	}
 
 	log.Printf("Cleaning cloud init partition")
@@ -117,7 +130,7 @@ func main() {
 		VolumeLabel: "config-2",
 	})
 	if err != nil {
-		log.Fatalf("Error creating cloud-init filesystem on %s: %v", diskName, err)
+		log.Fatalf("Error creating cloud-init filesystem on %s: %v", diskPath, err)
 	}
 
 	cloudInitPrefix := path.Join("/", "openstack", "latest")
