@@ -102,18 +102,24 @@ func main() {
 	cloudInitSectors := uint32(cloudInitSize / table.LogicalSectorSize)
 	cloudInitStart := uint32(int(destDisk.Size)/table.LogicalSectorSize) - cloudInitSectors
 
-	log.Printf("Partitions: %v", table.Partitions)
+	emptyPartIndex := -1
+	for i, part := range table.Partitions {
+		if part.Type == mbr.Empty {
+			emptyPartIndex = i
+			break
+		}
+	}
 
-	cloudInitPart := mbr.Partition{
+	if emptyPartIndex == -1 {
+		log.Fatalf("Could not find an empty partition to put cloud-init configdrive into")
+	}
+
+	table.Partitions[emptyPartIndex] = &mbr.Partition{
 		Bootable: false,
 		Type:     mbr.Linux,
 		Start:    cloudInitStart,
 		Size:     cloudInitSectors,
 	}
-	log.Printf("Cloud init part %v", cloudInitPart)
-
-	table.Partitions = append(table.Partitions, &cloudInitPart)
-	log.Printf("Partitions: %v", table.Partitions)
 
 	// write partition table to disk
 	log.Print("Writing partition table to disk")
@@ -121,13 +127,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error writing partition table to disk %s: %v", diskPath, err)
 	}
-
-	rawTable, err = destDisk.GetPartitionTable()
-	if err != nil {
-		log.Fatalf("Error getting partition table for disk %s: %v", diskPath, err)
-	}
-	table = rawTable.(*mbr.Table)
-	log.Printf("Partitions: %v", table.Partitions)
 
 	log.Printf("Cleaning cloud init partition")
 	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
