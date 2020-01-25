@@ -41,6 +41,7 @@ func (m *middleFileReader) Read(p []byte) (int, error) {
 
 	if uint32(tmpTotal) >= m.Size {
 		log.Printf("Read more than size so we are done %v", int(m.Size-uint32(m.total)))
+		m.total = uint64(m.Size)
 		return int(m.Size - uint32(m.total)), io.EOF
 	}
 	m.total = m.total + uint64(n)
