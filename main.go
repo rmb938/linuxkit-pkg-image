@@ -27,12 +27,12 @@ func main() {
 	flag.Parse()
 
 	log.Printf("Reading image %s", imagePath)
-	// imageDisk, err := diskfs.Open(imagePath)
-	// if err != nil {
-	// 	log.Fatalf("Error opening image %s: %v", imagePath, err)
-	// }
-	// rawPartitions, err := imageDisk.GetPartitionTable()
-	// imagePartitions := rawPartitions.(*mbr.Table).Partitions
+	imageDisk, err := diskfs.Open(imagePath)
+	if err != nil {
+		log.Fatalf("Error opening image %s: %v", imagePath, err)
+	}
+	rawPartitions, err := imageDisk.GetPartitionTable()
+	imagePartitions := rawPartitions.(*mbr.Table).Partitions
 
 	log.Printf("Reading disk %s", diskName)
 	destDisk, err := diskfs.Open(diskName)
@@ -57,25 +57,25 @@ func main() {
 		},
 	}
 
-	// nextSectorStart := startSector + cloudInitSectors
+	nextSectorStart := startSector + cloudInitSectors
 
 	// copy partition table from image
-	// log.Print("Copying partition table from image")
-	// for _, partition := range imagePartitions {
-	// 	log.Printf("Copying partition info %v", partition)
-	// 	if partition.Type == mbr.Empty {
-	// 		log.Printf("Ignoring empty typed partition")
-	// 		// ignore partitions that are empty type
-	// 		continue
-	// 	}
-	// 	table.Partitions = append(table.Partitions, &mbr.Partition{
-	// 		Bootable: partition.Bootable,
-	// 		Type:     partition.Type,
-	// 		Start:    nextSectorStart,
-	// 		Size:     partition.Size,
-	// 	})
-	// 	nextSectorStart = nextSectorStart + partition.Size
-	// }
+	log.Print("Copying partition table from image")
+	for _, partition := range imagePartitions {
+		log.Printf("Copying partition info %v", partition)
+		if partition.Type == mbr.Empty {
+			log.Printf("Ignoring empty typed partition")
+			// ignore partitions that are empty type
+			continue
+		}
+		table.Partitions = append(table.Partitions, &mbr.Partition{
+			Bootable: partition.Bootable,
+			Type:     partition.Type,
+			Start:    nextSectorStart,
+			Size:     partition.Size,
+		})
+		nextSectorStart = nextSectorStart + partition.Size
+	}
 
 	// write partition table to disk
 	log.Print("Writing partition table to disk")
@@ -87,6 +87,7 @@ func main() {
 	// TODO: copy partition contents
 	// log.Print("Copying partition contents from image")
 
+	log.Printf("Cleaning cloud init partition")
 	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
 	_, err = destDisk.WritePartitionContents(1, bytes.NewReader(b))
 	if err != nil {
