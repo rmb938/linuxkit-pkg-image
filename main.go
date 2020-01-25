@@ -113,6 +113,7 @@ func main() {
 	log.Printf("Cloud init part %v", cloudInitPart)
 
 	table.Partitions = append(table.Partitions, &cloudInitPart)
+	log.Printf("Partitions: %v", table.Partitions)
 
 	// write partition table to disk
 	log.Print("Writing partition table to disk")
