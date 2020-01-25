@@ -56,7 +56,7 @@ func main() {
 		},
 	}
 
-	nextSectorStart := startSector + cloudInitSectors + 1
+	nextSectorStart := startSector + cloudInitSectors
 
 	// copy partition table from image
 	log.Print("Copying partition table from image")
@@ -73,7 +73,7 @@ func main() {
 			Start:    nextSectorStart,
 			Size:     partition.Size,
 		})
-		nextSectorStart = nextSectorStart + partition.Size + 1
+		nextSectorStart = nextSectorStart + partition.Size
 	}
 
 	// write partition table to disk
