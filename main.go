@@ -24,7 +24,7 @@ type middleFileReader struct {
 	total uint64
 }
 
-func (m middleFileReader) Read(p []byte) (int, error) {
+func (m *middleFileReader) Read(p []byte) (int, error) {
 	n, err := m.File.ReadAt(p, int64(m.Start+uint32(m.total)))
 	if err != nil {
 		return n, err
@@ -119,7 +119,7 @@ func main() {
 			continue
 		}
 		f := imageDisk.File
-		_, err = destDisk.WritePartitionContents(i+2, middleFileReader{
+		_, err = destDisk.WritePartitionContents(i+2, &middleFileReader{
 			File:  *f,
 			Start: uint32(imagePartitionTable.LogicalSectorSize) * partition.Start,
 			Size:  uint32(imagePartitionTable.LogicalSectorSize) * partition.Size,
