@@ -39,6 +39,7 @@ func main() {
 		log.Fatalf("Error opening disk %s: %v", diskName, err)
 	}
 
+	startSector := uint32(2048)
 	cloudInitSize := 1 * 1024 * 1024 * 1024 // 1 GB
 	cloudInitSectors := uint32(cloudInitSize / int(destDisk.LogicalBlocksize))
 
@@ -49,13 +50,13 @@ func main() {
 			{
 				Bootable: false,
 				Type:     mbr.Linux,
-				Start:    2048,
+				Start:    startSector,
 				Size:     cloudInitSectors,
 			},
 		},
 	}
 
-	nextSectorStart := cloudInitSectors + 1
+	nextSectorStart := startSector + cloudInitSectors + 1
 
 	// copy partition table from image
 	log.Print("Copying partition table from image")
