@@ -136,7 +136,7 @@ func main() {
 		_, err = destDisk.WritePartitionContents(i+2, middleFileReader{
 			File:  *f,
 			Start: int64(imagePartitionTable.LogicalSectorSize * int(partition.Start)),
-			End:   int64(imagePartitionTable.LogicalSectorSize * int((partition.Start+partition.Size)-1)),
+			End:   int64(imagePartitionTable.LogicalSectorSize * int(partition.Start+partition.Size)),
 		})
 		if err != nil {
 			log.Fatalf("Error writing partition content from image %v", err)
