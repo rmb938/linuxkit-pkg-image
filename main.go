@@ -26,12 +26,12 @@ func main() {
 	flag.Parse()
 
 	log.Printf("Reading image %s", imagePath)
-	imageDisk, err := diskfs.Open(imagePath)
-	if err != nil {
-		log.Fatalf("Error opening image %s: %v", imagePath, err)
-	}
-	rawPartitions, err := imageDisk.GetPartitionTable()
-	imagePartitions := rawPartitions.(*mbr.Table).Partitions
+	// imageDisk, err := diskfs.Open(imagePath)
+	// if err != nil {
+	// 	log.Fatalf("Error opening image %s: %v", imagePath, err)
+	// }
+	// rawPartitions, err := imageDisk.GetPartitionTable()
+	// imagePartitions := rawPartitions.(*mbr.Table).Partitions
 
 	log.Printf("Reading disk %s", diskName)
 	destDisk, err := diskfs.Open(diskName)
