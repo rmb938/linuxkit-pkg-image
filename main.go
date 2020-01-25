@@ -60,6 +60,7 @@ func main() {
 	// copy partition table from image
 	log.Print("Copying partition table from image")
 	for _, partition := range imagePartitions {
+		log.Printf("Copying partition configuration: %v", partition)
 		table.Partitions = append(table.Partitions, &mbr.Partition{
 			Bootable: partition.Bootable,
 			Type:     partition.Type,
@@ -90,7 +91,7 @@ func main() {
 		log.Fatalf("Error creating cloud-init filesystem on %s: %v", diskName, err)
 	}
 
-	cloudInitPrefix := path.Join("openstack", "latest")
+	cloudInitPrefix := path.Join("/", "openstack", "latest")
 	// place down cloud-init info
 	log.Print("Creating cloud init directory structure")
 	err = cloudInitFS.Mkdir(cloudInitPrefix)
