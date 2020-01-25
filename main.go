@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/diskfs/go-diskfs/filesystem/iso9660"
 	"github.com/google/uuid"
 
 	"github.com/diskfs/go-diskfs"
@@ -88,15 +87,14 @@ func main() {
 
 	// create the cloud init filesystem
 	log.Print("Creating cloud init filesystem")
-	rawFS, err := destDisk.CreateFilesystem(disk.FilesystemSpec{
+	cloudInitFS, err := destDisk.CreateFilesystem(disk.FilesystemSpec{
 		Partition:   1,
-		FSType:      filesystem.TypeISO9660,
+		FSType:      filesystem.TypeFat32,
 		VolumeLabel: "config-2",
 	})
 	if err != nil {
 		log.Fatalf("Error creating cloud-init filesystem on %s: %v", diskName, err)
 	}
-	cloudInitFS := rawFS.(*iso9660.FileSystem)
 
 	cloudInitPrefix := path.Join("/", "openstack", "latest")
 	// place down cloud-init info
@@ -172,12 +170,5 @@ func main() {
 	_, err = userdataFile.Write([]byte("#cloud-config\n{}"))
 	if err != nil {
 		log.Fatalf("Error writting user data: %v", err)
-	}
-
-	err = cloudInitFS.Finalize(iso9660.FinalizeOptions{
-		VolumeIdentifier: "config-2",
-	})
-	if err != nil {
-		log.Fatalf("Error finalizing cloud init filesystem: %v", err)
 	}
 }
