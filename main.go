@@ -103,12 +103,16 @@ func main() {
 	cloudInitStart := uint32(int(destDisk.Size)/table.LogicalSectorSize) - cloudInitSectors
 
 	log.Printf("Partitions: %v", table.Partitions)
-	table.Partitions = append(table.Partitions, &mbr.Partition{
+
+	cloudInitPart := mbr.Partition{
 		Bootable: false,
 		Type:     mbr.Linux,
 		Start:    cloudInitStart,
 		Size:     cloudInitSectors,
-	})
+	}
+	log.Printf("Cloud init part %v", cloudInitPart)
+
+	table.Partitions = append(table.Partitions, &cloudInitPart)
 
 	// write partition table to disk
 	log.Print("Writing partition table to disk")
