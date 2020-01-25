@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -15,6 +16,42 @@ import (
 	"github.com/diskfs/go-diskfs/filesystem"
 	"github.com/diskfs/go-diskfs/partition/mbr"
 )
+
+type middleFileReader struct {
+	os.File
+	Start   int64
+	End     int64
+	current int64
+}
+
+func (m middleFileReader) Read(p []byte) (int, error) {
+	if m.current == 0 {
+		_, err := m.Seek(m.Start, 0)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	if m.current >= m.End {
+		return 0, io.EOF
+	}
+
+	n, err := m.File.Read(p)
+	if err != nil {
+		return n, err
+	}
+
+	if int64(n)+m.current > m.End {
+		zeroBytes := make([]byte, len(p[m.End-m.current:]))
+		p = append(p[:m.End-m.current-1], zeroBytes...)
+
+		m.current = m.End
+		return int(m.End - m.current), io.EOF
+	}
+
+	m.current = m.current + int64(n)
+	return n, nil
+}
 
 func main() {
 
@@ -32,7 +69,8 @@ func main() {
 		log.Fatalf("Error opening image %s: %v", imagePath, err)
 	}
 	rawPartitions, err := imageDisk.GetPartitionTable()
-	imagePartitions := rawPartitions.(*mbr.Table).Partitions
+	imagePartitionTable := rawPartitions.(*mbr.Table)
+	imagePartitions := imagePartitionTable.Partitions
 
 	log.Printf("Reading disk %s", diskName)
 	destDisk, err := diskfs.Open(diskName)
@@ -84,8 +122,26 @@ func main() {
 		log.Fatalf("Error writing partition table to disk %s: %v", diskName, err)
 	}
 
-	// TODO: copy partition contents
-	// log.Print("Copying partition contents from image")
+	log.Print("Copying partition contents from image")
+	for i, partition := range imagePartitions {
+		if partition.Type == mbr.Empty {
+			continue
+		}
+		f := imageDisk.File
+		_, err = f.Seek(int64(imagePartitionTable.LogicalSectorSize*int(partition.Start)), 0)
+		if err != nil {
+			log.Fatalf("Error seaking to partition on image %v", err)
+		}
+
+		_, err = destDisk.WritePartitionContents(i+2, middleFileReader{
+			File:  *f,
+			Start: int64(imagePartitionTable.LogicalSectorSize * int(partition.Start)),
+			End:   int64(imagePartitionTable.LogicalSectorSize * int((partition.Start+partition.Size)-1)),
+		})
+		if err != nil {
+			log.Fatalf("Error writing partition content from image %v", err)
+		}
+	}
 
 	log.Printf("Cleaning cloud init partition")
 	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
