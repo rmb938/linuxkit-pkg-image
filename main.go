@@ -118,7 +118,7 @@ func main() {
 	// rootPath := path.Join(dir, "root")
 	// configDrivePath := path.Join(dir, "configDrive")
 
-	partStats, err := gopsutildisk.Partitions(true)
+	partStats, err := gopsutildisk.Partitions(false)
 	log.Printf("%v", partStats)
 
 	//
