@@ -117,11 +117,6 @@ func main() {
 			continue
 		}
 		f := imageDisk.File
-		_, err = f.Seek(int64(imagePartitionTable.LogicalSectorSize*int(partition.Start)), 0)
-		if err != nil {
-			log.Fatalf("Error seaking to partition on image %v", err)
-		}
-
 		_, err = destDisk.WritePartitionContents(i+2, middleFileReader{
 			File:  *f,
 			Start: int64(imagePartitionTable.LogicalSectorSize * int(partition.Start)),
