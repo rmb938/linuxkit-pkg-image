@@ -9,12 +9,12 @@ import (
 	"os"
 	"path"
 
+	"github.com/diskfs/go-diskfs/partition/mbr"
 	"github.com/google/uuid"
 
 	"github.com/diskfs/go-diskfs"
 	"github.com/diskfs/go-diskfs/disk"
 	"github.com/diskfs/go-diskfs/filesystem"
-	"github.com/diskfs/go-diskfs/partition/mbr"
 )
 
 type middleFileReader struct {
@@ -62,13 +62,10 @@ func main() {
 	flag.Parse()
 
 	log.Printf("Reading image %s", imagePath)
-	imageDisk, err := diskfs.Open(imagePath)
+	imageFile, err := os.Open(imagePath)
 	if err != nil {
 		log.Fatalf("Error opening image %s: %v", imagePath, err)
 	}
-	rawPartitions, err := imageDisk.GetPartitionTable()
-	imagePartitionTable := rawPartitions.(*mbr.Table)
-	imagePartitions := imagePartitionTable.Partitions
 
 	log.Printf("Reading disk %s", diskName)
 	destDisk, err := diskfs.Open(diskName)
@@ -76,66 +73,33 @@ func main() {
 		log.Fatalf("Error opening disk %s: %v", diskName, err)
 	}
 
-	startSector := uint32(2048)
+	log.Print("Writing image to disk")
+	_, err = io.Copy(destDisk.File, imageFile)
+	if err != nil {
+		log.Fatalf("Error writing image to disk %s: %v", diskName, err)
+	}
+
+	rawTable, err := destDisk.GetPartitionTable()
+	if err != nil {
+		log.Fatalf("Error getting partition table for disk %s: %v", diskName, err)
+	}
+	table := rawTable.(*mbr.Table)
+
 	cloudInitSize := 1 * 1024 * 1024 * 1024 // 1 GB
-	cloudInitSectors := uint32(cloudInitSize / int(destDisk.LogicalBlocksize))
-
-	table := &mbr.Table{
-		LogicalSectorSize:  int(destDisk.LogicalBlocksize),
-		PhysicalSectorSize: int(destDisk.PhysicalBlocksize),
-		Partitions: []*mbr.Partition{
-			{
-				Bootable: false,
-				Type:     mbr.Linux,
-				Start:    startSector,
-				Size:     cloudInitSectors,
-			},
-		},
-	}
-
-	nextSectorStart := startSector + cloudInitSectors
-
-	// copy partition table from image
-	log.Print("Copying partition table from image")
-	for _, partition := range imagePartitions {
-		log.Printf("Copying partition info %v", partition)
-		if partition.Type == mbr.Empty {
-			log.Printf("Ignoring empty typed partition")
-			// ignore partitions that are empty type
-			continue
-		}
-		table.Partitions = append(table.Partitions, &mbr.Partition{
-			Bootable: partition.Bootable,
-			Type:     partition.Type,
-			Start:    nextSectorStart,
-			Size:     partition.Size,
-		})
-		nextSectorStart = nextSectorStart + partition.Size
-	}
+	cloudInitSectors := uint32(cloudInitSize / table.LogicalSectorSize)
+	cloudInitStart := uint32(int(destDisk.Size)/table.LogicalSectorSize) - cloudInitSectors
+	table.Partitions = append(table.Partitions, &mbr.Partition{
+		Bootable: false,
+		Type:     mbr.Linux,
+		Start:    cloudInitStart,
+		Size:     cloudInitSectors,
+	})
 
 	// write partition table to disk
 	log.Print("Writing partition table to disk")
 	err = destDisk.Partition(table)
 	if err != nil {
 		log.Fatalf("Error writing partition table to disk %s: %v", diskName, err)
-	}
-
-	log.Print("Copying partition contents from image")
-	for i, partition := range imagePartitions {
-		if partition.Type == mbr.Empty {
-			continue
-		}
-
-		log.Printf("Writing Partition")
-		f := imageDisk.File
-		_, err = f.Seek(int64(imagePartitionTable.LogicalSectorSize*int(partition.Start)), 0)
-		if err != nil {
-			log.Fatalf("Error seaking to first partition %v", err)
-		}
-		_, err = destDisk.WritePartitionContents(i+2, f)
-		if err != nil {
-			log.Fatalf("Error writing partition content from image %v", err)
-		}
 	}
 
 	log.Printf("Cleaning cloud init partition")
