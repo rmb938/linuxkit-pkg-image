@@ -67,7 +67,7 @@ func main() {
 		log.Fatalf("Error opening image %s: %v", imagePath, err)
 	}
 
-	diskFile, err := os.Open(diskPath)
+	diskFile, err := os.OpenFile(diskPath, os.O_RDWR|os.O_EXCL, 0600)
 	if err != nil {
 		log.Fatalf("Error opening disk %s: %v", diskPath, err)
 	}
@@ -101,6 +101,8 @@ func main() {
 	cloudInitSize := 1 * 1024 * 1024 * 1024 // 1 GB
 	cloudInitSectors := uint32(cloudInitSize / table.LogicalSectorSize)
 	cloudInitStart := uint32(int(destDisk.Size)/table.LogicalSectorSize) - cloudInitSectors
+
+	log.Printf("Partitions: %v", table.Partitions)
 	table.Partitions = append(table.Partitions, &mbr.Partition{
 		Bootable: false,
 		Type:     mbr.Linux,
