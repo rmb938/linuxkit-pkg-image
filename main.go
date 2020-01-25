@@ -30,7 +30,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error opening image %s: %v", imagePath, err)
 	}
-	imagePartitions := imageDisk.Table.(*mbr.Table).Partitions
+	rawPartitions, err := imageDisk.GetPartitionTable()
+	imagePartitions := rawPartitions.(*mbr.Table).Partitions
 
 	log.Printf("Reading smallest disk %s", diskName)
 	destDisk, err := diskfs.Open(diskName)
