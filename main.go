@@ -61,11 +61,11 @@ func main() {
 	log.Print("Copying partition table from image")
 	for _, partition := range imagePartitions {
 		log.Printf("Copying partition info %v", partition)
-		if partition.Type == mbr.Empty {
-			log.Printf("Ignoring empty typed partition")
-			// ignore partitions that are empty type
-			continue
-		}
+		// if partition.Type == mbr.Empty {
+		// 	log.Printf("Ignoring empty typed partition")
+		// 	// ignore partitions that are empty type
+		// 	continue
+		// }
 		table.Partitions = append(table.Partitions, &mbr.Partition{
 			Bootable: partition.Bootable,
 			Type:     partition.Type,
