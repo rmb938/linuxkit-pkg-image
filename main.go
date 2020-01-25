@@ -87,6 +87,12 @@ func main() {
 	// TODO: copy partition contents
 	// log.Print("Copying partition contents from image")
 
+	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
+	_, err = destDisk.WritePartitionContents(1, bytes.NewReader(b))
+	if err != nil {
+		log.Fatalf("Error cleaning cloud-init partition: %v", err)
+	}
+
 	// create the cloud init filesystem
 	log.Print("Creating cloud init filesystem")
 	cloudInitFS, err := destDisk.CreateFilesystem(disk.FilesystemSpec{
@@ -96,12 +102,6 @@ func main() {
 	})
 	if err != nil {
 		log.Fatalf("Error creating cloud-init filesystem on %s: %v", diskName, err)
-	}
-
-	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
-	_, err = destDisk.WritePartitionContents(1, bytes.NewReader(b))
-	if err != nil {
-		log.Fatalf("Error cleaning cloud-init partition: %v", err)
 	}
 
 	cloudInitPrefix := path.Join("/", "openstack", "latest")
