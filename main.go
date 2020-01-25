@@ -60,7 +60,10 @@ func main() {
 	// copy partition table from image
 	log.Print("Copying partition table from image")
 	for _, partition := range imagePartitions {
-		log.Printf("Copying partition configuration: %v", partition)
+		if partition.Size == 0 {
+			// ignore partitions with 0 size
+			continue
+		}
 		table.Partitions = append(table.Partitions, &mbr.Partition{
 			Bootable: partition.Bootable,
 			Type:     partition.Type,
@@ -133,7 +136,7 @@ func main() {
 		"links": []map[string]string{
 			{
 				"id":                   "eth0",
-				"ethernet_mac_address": "",
+				"ethernet_mac_address": "d0:50:99:d3:47:d1",
 				"type":                 "phy",
 			},
 		},
