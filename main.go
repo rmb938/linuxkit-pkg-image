@@ -126,20 +126,13 @@ func main() {
 			continue
 		}
 
-		log.Printf("Cleaning partition")
-		b := make([]byte, uint32(imagePartitionTable.LogicalSectorSize)*partition.Size)
-		_, err = destDisk.WritePartitionContents(i+2, bytes.NewReader(b))
-		if err != nil {
-			log.Fatalf("Error cleaning partition: %v", err)
-		}
-
 		log.Printf("Writing Partition")
 		f := imageDisk.File
-		_, err = destDisk.WritePartitionContents(i+2, &middleFileReader{
-			File:  *f,
-			Start: uint32(imagePartitionTable.LogicalSectorSize) * partition.Start,
-			Size:  uint32(imagePartitionTable.LogicalSectorSize) * partition.Size,
-		})
+		_, err = f.Seek(int64(imagePartitionTable.LogicalSectorSize*int(partition.Start)), 0)
+		if err != nil {
+			log.Fatalf("Error seaking to first partition %v", err)
+		}
+		_, err = destDisk.WritePartitionContents(i+2, f)
 		if err != nil {
 			log.Fatalf("Error writing partition content from image %v", err)
 		}
