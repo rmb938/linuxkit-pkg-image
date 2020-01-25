@@ -104,6 +104,7 @@ func main() {
 
 	emptyPartIndex := -1
 	for i, part := range table.Partitions {
+		log.Printf("Part %v", part)
 		if part.Type == mbr.Empty {
 			emptyPartIndex = i
 			break
