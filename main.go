@@ -100,22 +100,9 @@ func main() {
 	}
 	table = rawTable.(*mbr.Table)
 
-	// TODO: find cloud-init partition
-	cloudInitPartIndex := -1
-	for i, part := range table.Partitions {
-		if part.Type == mbr.Fat32LBA && part.Start == cloudInitStart && part.Size == cloudInitSectors {
-			cloudInitPartIndex = i + 1
-			break
-		}
-	}
-
-	if cloudInitPartIndex == -1 {
-		log.Fatal("Could not find cloud init partition")
-	}
-
 	log.Printf("Cleaning cloud init partition")
 	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
-	_, err = destDisk.WritePartitionContents(cloudInitPartIndex, bytes.NewReader(b))
+	_, err = destDisk.WritePartitionContents(len(table.Partitions), bytes.NewReader(b))
 	if err != nil {
 		log.Fatalf("Error cleaning cloud-init partition: %v", err)
 	}
@@ -123,7 +110,7 @@ func main() {
 	// create the cloud init filesystem
 	log.Print("Creating cloud init filesystem")
 	cloudInitFS, err := destDisk.CreateFilesystem(disk.FilesystemSpec{
-		Partition:   cloudInitPartIndex,
+		Partition:   len(table.Partitions),
 		FSType:      filesystem.TypeFat32,
 		VolumeLabel: "config-2",
 	})
