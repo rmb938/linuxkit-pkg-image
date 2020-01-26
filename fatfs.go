@@ -20,9 +20,7 @@ func CreateFS(diskImg string) {
 	if diskImg == "" {
 		log.Fatal("must have a valid path for diskImg")
 	}
-	var diskSize int64
-	diskSize = 10 * 1024 * 1024 * 1024 // 10 GB
-	mydisk, err := diskfs.Create(diskImg, diskSize, diskfs.Raw)
+	mydisk, err := diskfs.Open(diskImg)
 	check(err)
 
 	table := &mbr.Table{
