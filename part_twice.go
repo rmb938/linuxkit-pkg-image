@@ -51,7 +51,7 @@ func CreateFSAndDir(diskImg string) {
 	err = mydisk.Partition(table)
 	check(err)
 
-	// zeroPartFix(mydisk)
+	zeroPartFix(mydisk)
 
 	fspec := disk.FilesystemSpec{Partition: 1, FSType: filesystem.TypeFat32, VolumeLabel: "config-2"}
 	fs, err := mydisk.CreateFilesystem(fspec)
