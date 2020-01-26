@@ -32,7 +32,12 @@ func CreateFSAndDir(diskImg string) {
 		log.Fatal("must have a valid path for diskImg")
 	}
 	mydisk, err := diskfs.Open(diskImg)
-	check(err)
+	if err != nil {
+		var diskSize int64
+		diskSize = 10 * 1024 * 1024 // 10 MB
+		mydisk, err = diskfs.Create(diskImg, diskSize, diskfs.Raw)
+		check(err)
+	}
 
 	table := &mbr.Table{
 		LogicalSectorSize:  512,
@@ -51,7 +56,7 @@ func CreateFSAndDir(diskImg string) {
 	err = mydisk.Partition(table)
 	check(err)
 
-	zeroPartFix(mydisk)
+	// zeroPartFix(mydisk)
 
 	fspec := disk.FilesystemSpec{Partition: 1, FSType: filesystem.TypeFat32, VolumeLabel: "config-2"}
 	fs, err := mydisk.CreateFilesystem(fspec)
