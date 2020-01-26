@@ -1,5 +1,7 @@
 github.com/diskfs/go-diskfs v0.0.0-20200122081249-f802411ce39d h1:CxNizz8wtvJAtXzoUMwk8v8p8KAi8QR+kFco2Fzjcj8=
 github.com/diskfs/go-diskfs v0.0.0-20200122081249-f802411ce39d/go.mod h1:x7shCYRoIc+XvebaZAnK9x6wsYAS+ExHUjuoZcnO+nc=
+github.com/diskfs/go-diskfs v0.0.0-20200126165944-b32bb488eada h1:+8L6hZ6/FIWyY6qTrvGTA38zAfs/EXlOr/59GquFGG8=
+github.com/diskfs/go-diskfs v0.0.0-20200126165944-b32bb488eada/go.mod h1:x7shCYRoIc+XvebaZAnK9x6wsYAS+ExHUjuoZcnO+nc=
 github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa h1:KIDDMLT1O0Nr7TSxp8xM5tJcdn8tgyAONntO829og1M=

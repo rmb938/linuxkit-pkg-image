@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"io"
@@ -95,12 +94,12 @@ func main() {
 		log.Fatalf("Error writing partition table to disk %s: %v", diskPath, err)
 	}
 
-	log.Printf("Cleaning cloud init partition")
-	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
-	_, err = destDisk.WritePartitionContents(len(table.Partitions), bytes.NewReader(b))
-	if err != nil {
-		log.Fatalf("Error cleaning cloud-init partition: %v", err)
-	}
+	// log.Printf("Cleaning cloud init partition")
+	// b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
+	// _, err = destDisk.WritePartitionContents(len(table.Partitions), bytes.NewReader(b))
+	// if err != nil {
+	// 	log.Fatalf("Error cleaning cloud-init partition: %v", err)
+	// }
 
 	// create the cloud init filesystem
 	log.Print("Creating cloud init filesystem")
