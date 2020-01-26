@@ -82,7 +82,7 @@ func main() {
 
 	table.Partitions = append(partitions, &mbr.Partition{
 		Bootable: false,
-		Type:     mbr.Fat32LBA,
+		Type:     mbr.Linux,
 		Start:    cloudInitStart,
 		Size:     cloudInitSectors,
 	})
