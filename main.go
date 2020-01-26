@@ -94,12 +94,6 @@ func main() {
 		log.Fatalf("Error writing partition table to disk %s: %v", diskPath, err)
 	}
 
-	rawTable, err = destDisk.GetPartitionTable()
-	if err != nil {
-		log.Fatalf("Error getting partition table for disk %s: %v", diskPath, err)
-	}
-	table = rawTable.(*mbr.Table)
-
 	log.Printf("Cleaning cloud init partition")
 	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
 	_, err = destDisk.WritePartitionContents(len(table.Partitions), bytes.NewReader(b))
