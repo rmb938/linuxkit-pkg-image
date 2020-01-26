@@ -67,11 +67,10 @@ func main() {
 	cloudInitSectors := uint32(cloudInitSize / table.LogicalSectorSize)
 	// we want to create it at the end of the disk
 	// so find the disk sector count and minus the cloudinit sectors
-	cloudInitStart := (uint32(int(destDisk.Size)/table.LogicalSectorSize) - cloudInitSectors) - 1
+	cloudInitStart := uint32(int(destDisk.Size)/table.LogicalSectorSize) - cloudInitSectors
 
 	partitions := make([]*mbr.Partition, 0)
 	for _, part := range table.Partitions {
-		log.Printf("Part %v", part)
 		if part.Type == mbr.Empty {
 			continue
 		}
@@ -90,7 +89,7 @@ func main() {
 	})
 
 	// write partition table to disk
-	log.Print("Writing partition table to disk")
+	log.Printf("Writing partition table to disk %#v", table.Partitions)
 	err = destDisk.Partition(table)
 	if err != nil {
 		log.Fatalf("Error writing partition table to disk %s: %v", diskPath, err)
