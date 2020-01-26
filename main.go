@@ -11,7 +11,6 @@ import (
 	"github.com/diskfs/go-diskfs/disk"
 	"github.com/diskfs/go-diskfs/filesystem"
 	"github.com/diskfs/go-diskfs/partition/mbr"
-	gopsutildisk "github.com/shirou/gopsutil/disk"
 )
 
 func main() {
@@ -117,9 +116,6 @@ func main() {
 
 	// rootPath := path.Join(dir, "root")
 	// configDrivePath := path.Join(dir, "configDrive")
-
-	partStats, err := gopsutildisk.Partitions(false)
-	log.Printf("%v", partStats)
 
 	//
 	// cloudInitPrefix := path.Join("/", "openstack", "latest")
