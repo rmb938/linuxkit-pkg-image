@@ -13,6 +13,12 @@ import (
 	"github.com/diskfs/go-diskfs/partition/mbr"
 )
 
+func check(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func zeroPartFix(mydisk *disk.Disk) {
 	b := make([]byte, mydisk.LogicalBlocksize*2097152)
 	_, err := mydisk.WritePartitionContents(1, bytes.NewReader(b))
