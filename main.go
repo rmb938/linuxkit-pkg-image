@@ -94,13 +94,6 @@ func main() {
 		log.Fatalf("Error writing partition table to disk %s: %v", diskPath, err)
 	}
 
-	log.Printf("Cleaning cloud init partition")
-	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
-	_, err = destDisk.WritePartitionContents(len(table.Partitions), bytes.NewReader(b))
-	if err != nil {
-		log.Fatalf("Error cleaning cloud-init partition: %v", err)
-	}
-
 	rawTable, err = destDisk.GetPartitionTable()
 	if err != nil {
 		log.Fatalf("Error getting partition table for disk %s: %v", diskPath, err)
@@ -118,6 +111,13 @@ func main() {
 
 	if cloudInitPartIndex == -1 {
 		log.Fatal("Could not find cloud init partition")
+	}
+
+	log.Printf("Cleaning cloud init partition")
+	b := make([]byte, destDisk.LogicalBlocksize*int64(cloudInitSectors))
+	_, err = destDisk.WritePartitionContents(cloudInitPartIndex, bytes.NewReader(b))
+	if err != nil {
+		log.Fatalf("Error cleaning cloud-init partition: %v", err)
 	}
 
 	// create the cloud init filesystem
