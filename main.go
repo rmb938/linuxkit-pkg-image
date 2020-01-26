@@ -65,7 +65,9 @@ func main() {
 
 	cloudInitSize := 64 * 1024 * 1024 // 64 MB
 	cloudInitSectors := uint32(cloudInitSize / table.LogicalSectorSize)
-	cloudInitStart := uint32(int(destDisk.Size)/table.LogicalSectorSize) - cloudInitSectors
+	// we want to create it at the end of the disk
+	// so find the disk sector count and minus the cloudinit sectors
+	cloudInitStart := (uint32(int(destDisk.Size)/table.LogicalSectorSize) - cloudInitSectors) - 1
 
 	partitions := make([]*mbr.Partition, 0)
 	for _, part := range table.Partitions {
