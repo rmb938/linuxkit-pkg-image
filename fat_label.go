@@ -25,16 +25,13 @@ func CreateFSAndDir(diskImg string) {
 	mydisk, err := diskfs.Open(diskImg)
 	if err != nil {
 		var diskSize int64
-		diskSize = 5 * 1024 * 1024 * 1024 // 5 GB
+		diskSize = 20 * 1024 * 1024 // 20 MB
 		mydisk, err = diskfs.Create(diskImg, diskSize, diskfs.Raw)
 		check(err)
 	}
 
-	cloudInitSize := 1 * 1024 * 1024 * 1024 // 1 GB
+	cloudInitSize := 10 * 1024 * 1024 // 10 MB
 	cloudInitSectors := uint32(cloudInitSize / 512)
-	// we want to create it at the end of the disk
-	// so find the disk sector count and minus the cloudinit sectors
-	cloudInitStart := uint32(int(mydisk.Size)/512) - cloudInitSectors
 
 	table := &mbr.Table{
 		LogicalSectorSize:  512,
@@ -43,7 +40,7 @@ func CreateFSAndDir(diskImg string) {
 			{
 				Bootable: false,
 				Type:     mbr.Linux,
-				Start:    cloudInitStart,
+				Start:    2048,
 				Size:     cloudInitSectors,
 			},
 		},
