@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 
 	diskfs "github.com/diskfs/go-diskfs"
 	"github.com/diskfs/go-diskfs/disk"
@@ -23,12 +22,7 @@ func CreateFSAndDir(diskImg string) {
 		log.Fatal("must have a valid path for diskImg")
 	}
 	mydisk, err := diskfs.Open(diskImg)
-	if err != nil {
-		var diskSize int64
-		diskSize = 20 * 1024 * 1024 // 20 MB
-		mydisk, err = diskfs.Create(diskImg, diskSize, diskfs.Raw)
-		check(err)
-	}
+	check(err)
 
 	cloudInitSize := 10 * 1024 * 1024 // 10 MB
 	cloudInitSectors := uint32(cloudInitSize / 512)
@@ -51,16 +45,9 @@ func CreateFSAndDir(diskImg string) {
 	check(err)
 
 	fspec := disk.FilesystemSpec{Partition: 1, FSType: filesystem.TypeFat32, VolumeLabel: "config-2"}
-	fs, err := mydisk.CreateFilesystem(fspec)
+	_, err := mydisk.CreateFilesystem(fspec)
 	check(err)
 
-	cloudInitPrefix := path.Join("/", "openstack", "latest")
-	// place down cloud-init info
-	log.Print("Creating cloud init directory structure")
-	err = fs.Mkdir(cloudInitPrefix)
-	if err != nil {
-		log.Fatalf("Error creating cloud init directory structure: %v", err)
-	}
 }
 
 func main() {
